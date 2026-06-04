@@ -1,0 +1,3 @@
+Backend: removed local fallback decision layers and kept only LLM request flow.
+Queue: now respects the global AI gate before dispatching a new request.
+Frontend: overworld agent render hides any agent derived as being inside the ship.

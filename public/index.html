@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arctic Betrayal · LLM SIM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ═══ TOP BAR ═══════════════════════════════════════════════════ -->
+    <header class="top-strip panel">
+      <!-- Brand -->
+      <div class="brand-block">
+        <div class="eyebrow">LLM SIMULATOR</div>
+        <h1>ARCTIC BETRAYAL</h1>
+        <div id="statusLine"     class="status-line">Booting.</div>
+        <div id="connectionStatus" class="connection-line">Backend: unknown</div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="top-metrics">
+        <div class="metric"><span>Match</span><strong id="matchId">—</strong></div>
+        <div class="metric"><span>Tick</span><strong id="tickValue">0</strong></div>
+        <div class="metric"><span>Day</span><strong id="dayValue">1</strong></div>
+        <div class="metric"><span>Phase</span><strong id="phaseValue">lobby</strong></div>
+        <div class="metric"><span>Weather</span><strong id="weatherValue">calm</strong></div>
+        <div class="metric"><span>Temp</span><strong id="tempValue">0°</strong></div>
+        <div class="metric"><span>Progress</span><strong id="progressValue">0%</strong></div>
+        <div class="metric"><span>FPS</span><strong id="fpsLive">0 fps</strong></div>
+      </div>
+
+      <!-- Controls -->
+      <div class="top-controls">
+        <button id="startBtn" class="primary">▶ START</button>
+        <button id="stopBtn">■ STOP</button>
+        <button id="resetBtn">↺ RESET</button>
+        <button id="recoverBtn">⚡ RECV</button>
+        <button id="saveBtn">💾 SAVE</button>
+        <button id="exportBtn">↓ EXP</button>
+        <button id="ttsToggle">🔊 TTS</button>
+        <button id="autoNarrationToggle">📢 NARR</button>
+        <button id="pauseToggle">⏸ PAUSE</button>
+        <button id="zoomOutBtn">− ZOOM</button>
+        <button id="zoomInBtn">+ ZOOM</button>
+        <button id="followShipBtn">⚓ SHIP</button>
+        <button id="followSelectedBtn">👤 SEL</button>
+        <button id="freeCamBtn">🎥 FREE</button>
+        <button id="shipViewBtn">🚢 SHIP</button>
+        <button id="overworldViewBtn">🗺 WORLD</button>
+      </div>
+
+      <!-- Readout -->
+      <div class="top-readout">
+        <div><span>Match</span><strong id="matchStatus">Lobby ready</strong></div>
+        <div><span>Config</span><strong id="configSync">Loading config</strong></div>
+        <div><span>TTS</span><strong id="ttsStatus">TTS off</strong></div>
+        <div><span>Narration</span><strong id="autoNarrationStatus">Narration live</strong></div>
+        <div><span>Loop</span><strong id="pauseStatus">Playing</strong></div>
+        <div><span>Follow</span><strong id="followModeValue">ship</strong></div>
+        <div><span>Scene</span><strong id="sceneModeValue">ship</strong></div>
+        <div><span>Zoom</span><strong id="zoomValue">1.25</strong></div>
+      </div>
+
+      <div id="voiceHint" class="small">TTS needs one click to unlock audio on this page.</div>
+    </header>
+
+    <!-- ═══ MAIN ═══════════════════════════════════════════════════════ -->
+    <main class="main-grid">
+
+      <!-- World viewport -->
+      <section class="viewport-panel panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">◈ WORLD VIEW</div>
+            <div id="sceneState" class="panel-subtitle">Waiting for world.</div>
+          </div>
+          <div class="panel-actions">
+            <button id="focusPrevBtn">◀ PREV</button>
+            <button id="focusNextBtn">NEXT ▶</button>
+            <button id="clearFeedBtn">✕ FEED</button>
+          </div>
+        </div>
+
+        <!-- Canvas wrapped for scanline overlay -->
+        <div class="world-canvas-wrap">
+          <canvas id="worldCanvas" class="world-canvas"></canvas>
+        </div>
+
+        <!-- Dialogue box (Undertale style) -->
+        <div class="beat-strip">
+          <div class="beat-label">NARRATIVE BEAT</div>
+          <div id="beatBanner" class="beat-banner">Waiting for the expedition to start.</div>
+          <div id="beatLine"   class="beat-line">—</div>
+        </div>
+      </section>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-tabs panel">
+          <button id="tabLobby">LOBBY</button>
+          <button id="tabOverview">WORLD</button>
+          <button id="tabCrew">CREW</button>
+          <button id="tabFocus">FOCUS</button>
+          <button id="tabFeed">FEED</button>
+        </div>
+
+        <!-- Lobby -->
+        <section id="lobbyPanel" class="panel lobby-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">◈ LOBBY</div>
+              <div class="panel-subtitle">Saved back into config.json.</div>
+            </div>
+            <label class="tiny-toggle">
+              <input id="debugRolesToggle" type="checkbox" />
+              <span>Debug roles</span>
+            </label>
+          </div>
+          <div class="toolbar-row">
+            <button id="addSlotBtn">+ SLOT</button>
+            <button id="removeSlotBtn">− SLOT</button>
+          </div>
+          <div id="slotList" class="slot-list"></div>
+          <div class="panel-title">AGENT NAMES</div>
+          <div id="agentNamesGrid" class="name-grid"></div>
+          <div class="lobby-foot">
+            <div id="lobbyErrors" class="errors"></div>
+          </div>
+        </section>
+
+        <section id="overviewPanel" class="panel data-panel"></section>
+        <section id="crewPanel"     class="panel data-panel"></section>
+        <section id="detailPanel"   class="panel data-panel"></section>
+        <section id="feedPanel"     class="panel data-panel"></section>
+      </aside>
+    </main>
+
+    <!-- ═══ BOTTOM BAR ════════════════════════════════════════════════ -->
+    <div class="bottom-strip panel">
+      <div class="bottom-item"><span>Backend</span><strong id="connectionStatusBottom">—</strong></div>
+      <div class="bottom-item"><span>TTS</span><strong id="ttsStatusBottom">—</strong></div>
+      <div class="bottom-item"><span>Scene</span><strong id="sceneStateBottom">ship</strong></div>
+      <div class="bottom-item"><span>Beat</span><strong id="narrationTicker">—</strong></div>
+    </div>
+  </div>
+
+  <!-- ═══ SUBTITLE overlay (hidden, referenced by app.js setBeat) ════ -->
+  <div id="subtitleLine" style="display:none"></div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       FRONTEND-ONLY UX ENHANCEMENTS  (no backend touch)
+       ════════════════════════════════════════════════════════════════ -->
+  <script>
+  (() => {
+    /* ── 1. Auto-fit canvas height to remaining viewport ────────────── */
+    function fitCanvas() {
+      const canvas = document.getElementById('worldCanvas');
+      if (!canvas) return;
+      const topH   = document.querySelector('.top-strip')?.offsetHeight   || 0;
+      const botH   = document.querySelector('.bottom-strip')?.offsetHeight || 0;
+      const tabs   = document.querySelector('.sidebar-tabs')?.offsetHeight || 0;
+      const beatH  = document.querySelector('.beat-strip')?.offsetHeight   || 0;
+      const margin = 8 * 6; // gaps + padding
+      const avail  = window.innerHeight - topH - botH - beatH - tabs - margin;
+      const capped = Math.max(300, Math.min(avail, window.innerWidth * 0.7));
+      canvas.style.height = capped + 'px';
+    }
+    window.addEventListener('resize', fitCanvas);
+    document.addEventListener('DOMContentLoaded', fitCanvas);
+    setTimeout(fitCanvas, 200);
+
+    /* ── 2. Keyboard shortcuts ──────────────────────────────────────── */
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const map = {
+        'Space':       'pauseToggle',
+        'KeyS':        'startBtn',
+        'KeyR':        'resetBtn',
+        'Equal':       'zoomInBtn',
+        'Minus':       'zoomOutBtn',
+        'BracketLeft': 'focusPrevBtn',
+        'BracketRight':'focusNextBtn',
+        'Digit1':      'tabLobby',
+        'Digit2':      'tabOverview',
+        'Digit3':      'tabCrew',
+        'Digit4':      'tabFocus',
+        'Digit5':      'tabFeed',
+      };
+      const id = map[e.code];
+      if (id) { e.preventDefault(); document.getElementById(id)?.click(); }
+    });
+
+    /* ── 3. Beat banner typewriter effect ───────────────────────────── */
+    const banner = document.getElementById('beatBanner');
+    let typeTimer = null;
+    let lastText = '';
+
+    const _orig = MutationObserver;
+    const bannerObs = new MutationObserver(() => {
+      const full = banner.textContent;
+      if (full === lastText) return;
+      lastText = full;
+      if (typeTimer) clearInterval(typeTimer);
+      let i = 0;
+      banner.textContent = '';
+      typeTimer = setInterval(() => {
+        banner.textContent = full.slice(0, ++i);
+        if (i >= full.length) clearInterval(typeTimer);
+      }, 22);
+    });
+    bannerObs.observe(banner, { childList: true, subtree: false, characterData: true });
+
+    /* ── 4. Click-to-flash on metric tiles ──────────────────────────── */
+    document.querySelectorAll('.metric').forEach(m => {
+      m.style.transition = 'box-shadow 0.25s';
+      const obs = new MutationObserver(() => {
+        m.style.boxShadow = '0 0 18px rgba(255,224,64,0.55)';
+        setTimeout(() => m.style.boxShadow = '', 600);
+      });
+      obs.observe(m.querySelector('strong'), { childList: true, characterData: true, subtree: true });
+    });
+
+    /* ── 5. Scanline CRT toggle (double-click canvas) ───────────────── */
+    const wrap = document.querySelector('.world-canvas-wrap');
+    if (wrap) {
+      wrap.addEventListener('dblclick', () => {
+        wrap.classList.toggle('no-scanline');
+      });
+    }
+
+    /* ── 6. Minimal toast system for action feedback ────────────────── */
+    window._toast = function(msg, color = '#ff2d6b') {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, {
+        position: 'fixed', bottom: '60px', left: '50%',
+        transform: 'translateX(-50%)',
+        background: '#0a0415', border: `2px solid ${color}`,
+        color: '#f5eeff', padding: '8px 18px',
+        fontFamily: '"Press Start 2P", monospace', fontSize: '8px',
+        borderRadius: '4px', zIndex: 9999,
+        boxShadow: `0 0 16px ${color}55`,
+        animation: 'fadeUp 0.25s ease',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 1800);
+    };
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeUp { from { opacity:0; transform:translateX(-50%) translateY(10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+      .no-scanline::after { display:none !important; }
+      .battle-card { background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:8px;display:grid;gap:5px; }
+      .battle-line { display:flex;justify-content:space-between;gap:8px;font-size:10px;font-family:var(--mono);align-items:baseline; }
+      .battle-line span { color:var(--muted); }
+      .battle-line strong { color:var(--text);font-size:11px; }
+      .muted { color:var(--muted);font-size:10px; }
+    `;
+    document.head.appendChild(style);
+
+    /* Intercept save/reset/start for toast feedback */
+    ['saveBtn','resetBtn','startBtn','stopBtn','recoverBtn'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        const msg = { saveBtn:'SAVED ✓', resetBtn:'RESET ↺', startBtn:'STARTING ▶', stopBtn:'STOPPED ■', recoverBtn:'RECOVERING...' };
+        window._toast(msg[id] || id, id === 'startBtn' ? '#39ff85' : '#ff2d6b');
+      });
+    });
+  })();
+  </script>
+
+  <script src="/app.core.js"></script>
+  <script src="/app.render.js"></script>
+  <script src="/app.controls.js"></script>
+</body>
+</html>
